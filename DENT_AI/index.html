@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENT AI | المساعد الذكي لصحة الفم</title>
+    <style>
+        /* إعدادات الألوان والخطوط - ستايل ChatGPT */
+        :root {
+            --bg-body: #f7f7f8;
+            --ai-bubble: #ffffff;
+            --user-bubble: #00a67e; /* لون أخضر ذكي */
+            --text-dark: #343541;
+            --primary-blue: #0077b6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .chat-wrapper {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        /* رأس الصفحة */
+        .header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            position: sticky;
+            top: 0;
+        }
+
+        .header h1 { font-size: 1.2rem; margin: 0; color: var(--text-dark); }
+        .online-dot { width: 10px; height: 10px; background: #10a37f; border-radius: 50%; }
+
+        /* منطقة المحادثة */
+        #chat-display {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .msg-container { display: flex; flex-direction: column; }
+
+        .msg {
+            max-width: 85%;
+            padding: 12px 16px;
+            font-size: 15px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        /* ستايل رسالة المستخدم */
+        .user-container { align-items: flex-end; }
+        .user-msg {
+            background-color: var(--user-bubble);
+            color: white;
+            border-radius: 18px 18px 2px 18px;
+        }
+
+        /* ستايل رسالة الـ AI */
+        .ai-container { align-items: flex-start; }
+        .ai-msg {
+            background-color: var(--ai-bubble);
+            color: var(--text-dark);
+            border: 1px solid #e5e5e5;
+            border-radius: 18px 18px 18px 2px;
+        }
+
+        /* منطقة الإدخال السفلى */
+        .input-container {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background: #fff;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 5px 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.02);
+        }
+
+        input {
+            flex: 1;
+            border: none;
+            padding: 12px;
+            outline: none;
+            font-size: 15px;
+        }
+
+        button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--user-bubble);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* انيميشن "جاري الكتابة" */
+        .typing {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-wrapper">
+    <div class="header">
+        <div class="online-dot"></div>
+        <h1>DENT AI</h1>
+    </div>
+
+    <div id="chat-display">
+        <div class="msg-container ai-container">
+            <div class="msg ai-msg">مرحباً بك! أنا DENT AI مساعدك المتخصص في طب الأسنان. كيف يمكنني العناية بابتسامتك اليوم؟ 🦷</div>
+        </div>
+    </div>
+
+    <div id="typing-indicator" class="typing" style="padding: 0 20px;">DENT AI يكتب الآن...</div>
+
+    <div class="input-container">
+        <div class="input-wrapper">
+            <input type="text" id="user-input" placeholder="اسأل عن أي شيء يخص أسنانك..." onkeypress="if(event.key === 'Enter') askDentAI()">
+            <button onclick="askDentAI()">➤</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ضع مفتاحك هنا
+    const API_KEY = "AIzaSyCJ6EoTYqQWQ81I99CUVMBoIwU9-wFkvjg";
+
+    async function askDentAI() {
+        const input = document.getElementById('user-input');
+        const display = document.getElementById('chat-display');
+        const typing = document.getElementById('typing-indicator');
+        const text = input.value.trim();
+
+        if (!text) return;
+
+        // 1. عرض رسالة المستخدم
+        display.innerHTML += `
+            <div class="msg-container user-container">
+                <div class="msg user-msg">${text}</div>
+            </div>
+        `;
+        
+        input.value = "";
+        typing.style.display = "block";
+        display.scrollTop = display.scrollHeight;
+
+        try {
+            // 2. طلب الرد من الـ AI
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `أنت طبيب أسنان محترف واسمك DENT AI. أسلوبك مثل ChatGPT: منظم، طبي، وودود. استخدم الرموز التعبيرية الطبية. السؤال: ${text}` }] }]
+                })
+            });
+
+            const data = await response.json();
+            const aiText = data.candidates[0].content.parts[0].text;
+
+            // 3. عرض رد الـ AI
+            display.innerHTML += `
+                <div class="msg-container ai-container">
+                    <div class="msg ai-msg">${aiText}</div>
+                </div>
+            `;
+        } catch (e) {
+            display.innerHTML += `
+                <div class="msg-container ai-container">
+                    <div class="msg ai-msg" style="color:red;">حدث خطأ فني، يرجى المحاولة لاحقاً.</div>
+                </div>
+            `;
+        } finally {
+            typing.style.display = "none";
+            display.scrollTop = display.scrollHeight;
+        }
+    }
+</script>
+
+</body>
+</html>
